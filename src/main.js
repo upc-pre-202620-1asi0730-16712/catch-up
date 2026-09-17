@@ -7,7 +7,7 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import {Avatar, Button, SelectButton} from "primevue";
 
-const primeUiLicenseKey = "eyJpZCI6ImFmM2U5YjFlLTM4NzEtNGU2MS1iNDk1LTViMTA5YzY2OTBhNiIsInByb2R1Y3QiOiJwcmltZXVpIiwidGllciI6ImNvbW11bml0eSIsInR5cGUiOiJkZXYiLCJpYXQiOjE3ODk1Njk3NjUsImV4cCI6MTgyMTEwNTc2NX0.pRhfdy6wjsRrLJsQxIbwhpJHcgCsPc4uvUJgHrioOC7TaXn0ZM_6aTi-9d3a9toGCy-yzbO12aO4in6xkJyZBQ";
+const primeUiLicenseKey = import.meta.env.VITE_PRIME_UI_LICENSE_KEY;
 
 createApp(App)
     .use(i18n)
