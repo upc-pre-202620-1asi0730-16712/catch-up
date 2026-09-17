@@ -1,0 +1,191 @@
+@startuml
+' Class diagram for CatchUp Application
+
+package "news.domain.model" {
+  class Article << Entity >> {
+    - author: string
+    - title: string
+    - description: string
+    - url: Url
+    - urlToImage: Url
+    - publishedAt: DateTime
+    - source: Source
+    + getFormatedPublishedAt(): string
+  }
+  class Source << Entity >> {
+    - id: string
+    - name: string
+    - description: string
+    - url: Url
+    - category: string
+    - language: string
+    - country: string
+    - urlToLogo: string
+  }
+}
+
+package "news.application" {
+  class newsStore << Store >> {
+    + sources: Source[]
+    + articles: Article[]
+    + errors: string[]
+    + currentSource: Source
+    + setCurrentSource(source): void
+    + loadSources(): void
+    + loadArticlesForCurrentSource(): void
+  }
+}
+
+package "news.infrastructure" {
+  class NewsApi << Adapter >> {
+    + getSources(): Promise
+    + getArticlesForSourceId(sourceId: string): Promise
+  }
+  class ArticleAssembler << Assembler >> {
+    - #source: Source
+    - #sourceAssembler: SourceAssembler
+    + toEntityFromResource(resource: ArticleResource): Article
+    + toEntitiesFromResponse(response: AxiosResponse): Article[]
+  }
+  class SourceAssembler << Assembler >> {
+    - #logoApi: LogoDevApi
+    + toEntitiesFromResponse(response: AxiosResponse): Source[]
+    + toEntityFromResource(resource: SourceResource): Source
+  }
+  interface ArticleResource << Resource >> << (R,#FF7700) >> {
+    + title: string
+    + description: string
+    + url: string
+    + urlToImage: string
+    + publishedAt: string
+    + source: SourceResource
+  }
+  interface SourceResource << Resource >> << (R,#FF7700) >> {
+    + id: string
+    + name: string
+    + description: string
+    + url: string
+    + category: string
+    + language: string
+    + country: string
+  }
+}
+
+package "news.presentation.components" {
+  class ArticleItem << Component >> {
+    - article: Article
+    - sourceSummary: SourceSummary
+    + toggleSourceSummary(event): void
+    + shareArticle(): void
+    + articleShared(): void <<event>>
+  }
+  class ArticleList << Component >> {
+    - articles: Article[]
+  }
+  class SourceItem << Component >> {
+    - source: Source
+    + emitSourceSelectedEvent(): void
+    + sourceSelected(): void <<event>>
+  }
+  class SourceList << Component >> {
+    - visible: Boolean
+    - sources: Source[]
+    + emitSourceSelectedEvent(source): void
+    + onUpdateVisible(value): void
+    + sourceSelected(): void <<event>>
+    + updateVisible(): void <<event>>
+  }
+  class SourceSummary << Component >> {
+    - source: Source
+    + toggle(event): void
+  }
+  class UnavailableContent << Component >> {
+    - errors: string[]
+  }
+}
+
+package "shared.domain.model" {
+  class DateTime << ValueObject >> {
+    - #date: Date
+    + isFuture(): boolean
+    + format(locale, options): string
+    + toDate(): Date
+    + toISOString(): string
+    + valueOf(): number
+    {static} + now(): DateTime
+  }
+  class Url << ValueObject >> {
+    - #url: string
+    + isEmpty(): boolean
+    + toString(): string
+    + equals(other): boolean
+    {static} + isValidUrl(url): boolean
+  }
+  class StringValidator << ValueObject >> {
+    {static} + isNotEmptyString(value): boolean
+  }
+}
+
+package "shared.infrastructure" {
+  class LogoDevApi << Adapter >> {
+    + getUrlToLogo(source): string
+  }
+  class errorInterceptor << HttpInterceptor >> {
+    + onResponse(response): AxiosResponse
+    + onError(error): Promise
+  }
+}
+
+package "shared.presentation.components" {
+  class FooterContent << Component >> {
+    ' static content
+  }
+  class LanguageSwitcher << Component >> {
+    ' uses useI18n
+  }
+  class Layout << Component >> {
+    - drawerVisible: boolean
+    - sources: Source[]
+    - errors: string[]
+    - articles: Article[]
+    + toggleDrawer(): void
+    + setSource(source): void
+    + onMounted(): void
+  }
+}
+
+class App << Component >>
+
+' Relationships outside packages
+Article --> Source
+Article --> "shared.domain.model.Url"
+Article --> "shared.domain.model.DateTime"
+Source --> "shared.domain.model.Url"
+newsStore ..> "news.domain.model.Article" : uses
+newsStore ..> "news.domain.model.Source" : uses
+newsStore ..> "news.infrastructure.NewsApi" : uses
+newsStore ..> "news.infrastructure.ArticleAssembler" : uses
+newsStore ..> "news.infrastructure.SourceAssembler" : uses
+NewsApi ..> "shared.infrastructure.errorInterceptor" : uses
+ArticleAssembler ..> "news.domain.model.Article" : creates
+ArticleAssembler ..> SourceAssembler : uses
+ArticleAssembler ..> ArticleResource : uses
+SourceAssembler ..> "news.domain.model.Source" : creates
+SourceAssembler ..> "shared.infrastructure.LogoDevApi" : uses
+SourceAssembler ..> SourceResource : uses
+ArticleResource --> SourceResource
+ArticleList --> ArticleItem : uses
+ArticleItem --> Article : uses
+ArticleItem --> SourceSummary : uses
+SourceList --> SourceItem : uses
+SourceItem --> Source : uses
+SourceSummary --> Source : uses
+Layout --> FooterContent : uses
+Layout --> LanguageSwitcher : uses
+Layout --> "news.presentation.components.SourceList" : uses
+Layout --> "news.presentation.components.ArticleList" : uses
+Layout --> "news.presentation.components.UnavailableContent" : uses
+Layout --> newsStore : uses
+App --> Layout : uses
+
+@enduml
