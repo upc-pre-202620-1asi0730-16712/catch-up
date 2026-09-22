@@ -12,12 +12,12 @@ export const newsStore = reactive({
     errors: [],
     currentSource: null,
 
-    setCurrentSource: (source) => {
+    setCurrentSource(source){
         this.currentSource = source;
         this.loadArticlesForCurrentSource();
     },
 
-    loadSources: () => {
+    loadSources(){
         this.errors = [];
         newsApi.getSources()
             .then((response) => {
@@ -32,7 +32,7 @@ export const newsStore = reactive({
             });
     },
 
-    loadArticlesForCurrentSource: () => {
+    loadArticlesForCurrentSource(){
         if (this.currentSource === null) return;
         newsApi.getArticlesForSourceId(this.currentSource.id).then(articles => {
             const articleAssembler = new ArticleAssembler(this.currentSource);
