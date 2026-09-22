@@ -1,7 +1,7 @@
 import {SourceAssembler} from "@/news/infrastructure/source.assembler.js";
 import {Article} from "@/news/domain/model/article.entity.js";
 
-export class AssetApi {
+export class ArticleAssembler {
     #source;
     #sourceAssembler;
 
